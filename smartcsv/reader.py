@@ -2,6 +2,8 @@ import csv
 
 from .exceptions import *
 
+if sys.version_info[0] == 3:
+    unicode = str
 
 class CSVModelReader(object):
 
@@ -180,7 +182,7 @@ class CSVModelReader(object):
                 value = self.field_conversions[index](value)
             except:
                 pass
-                
+
             obj[self.model_fields[index]] = value
 
         self.row_counter += 1
