@@ -6,6 +6,13 @@ from .exceptions import *
 class CSVModelReader(object):
 
     DEFAULT_ROW_INVALID_MESSAGE = "Row {0} is invalid."
+    CONVERT_TYPES = {
+        'str':str,
+        'int':int,
+        'float':float,
+        'bool':bool,
+        'unicode':unicode
+    }
 
     def __init__(self, csv_file, dialect=None, encoding='utf-8',
                  columns=None, fail_fast=True, max_failures=None,
@@ -49,6 +56,8 @@ class CSVModelReader(object):
         self.errors = {'rows': {}}
 
         self.model_fields = [c['name'] for c in self.columns]
+        
+        self.field_conversions = {}
 
         self._skip_lines()
 
@@ -103,6 +112,15 @@ class CSVModelReader(object):
                 return False, {
                     column['name']: 'Field required and not provided.'
                 }
+            if 'convert' in column and value:
+                converter = column.get('convert')
+                if converter not in self.CONVERT_TYPES:
+                    return False, {
+                        column['name']: (
+                            'Invalid conversion type.'
+                            'Expected either {0}. Got {1}'.format(', '.join(self.CONVERT_TYPES), value))
+                    }
+                self.field_conversions.update({index:self.CONVERT_TYPES[converter]})
             if 'validator' in column and value:
                 validator = column.get('validator')
                 if not hasattr(validator, '__call__'):
@@ -156,6 +174,13 @@ class CSVModelReader(object):
         obj = {}
         for index, value in enumerate(csv_row):
             value = value.strip() if self.strip_white_spaces else value
+
+            # Attempt the conversion, if it fails just return the normal value
+            try:
+                value = self.field_conversions[index](value)
+            except:
+                pass
+                
             obj[self.model_fields[index]] = value
 
         self.row_counter += 1
