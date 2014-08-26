@@ -1,4 +1,4 @@
-import csv
+import sys, csv
 
 from .exceptions import *
 
