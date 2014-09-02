@@ -258,3 +258,71 @@ title,category,subcategory,currency,price,url,image_url
 
         self.assertFalse('url' in iphone)
         self.assertFalse('url' in ipad)
+
+
+class DefaultValuesForColumnsTestCase(BaseSmartCSVTestCase):
+
+    def test_required_field_with_default_value(self):
+        """Should use the default value and don't throw errors if the field is required"""
+        iphone_data = IPHONE_DATA.copy()
+        iphone_data['category'] = ''
+
+        columns = deepcopy(COLUMNS_1)
+        # Default cat for a required field
+        columns[1]['default'] = 'CAT-XXX'
+        csv_data = """
+title,category,subcategory,currency,price,url,image_url
+{iphone_data}
+{ipad_data}
+        """.format(
+            iphone_data=VALID_TEMPLATE_STR.format(**iphone_data),
+            ipad_data=VALID_TEMPLATE_STR.format(**IPAD_DATA),
+        )
+
+        reader = smartcsv.reader(StringIO(csv_data), columns=columns)
+        iphone = next(reader)
+        ipad = next(reader)
+
+        self.assertRaises(StopIteration, lambda: list(next(reader)))
+
+        self.assertTrue(
+            isinstance(iphone, dict) and isinstance(ipad, dict))
+
+        expected_iphone_data = IPHONE_DATA.copy()
+        expected_iphone_data['category'] = 'CAT-XXX'
+
+        self.assertModelsEquals(iphone, expected_iphone_data)
+        self.assertModelsEquals(ipad, IPAD_DATA)
+
+    def test_not_required_field_with_default_value(self):
+        """Should use the default value and don't throw errors if the field is not required"""
+        iphone_data = IPHONE_DATA.copy()
+        iphone_data['category'] = ''
+
+        columns = deepcopy(COLUMNS_1)
+        # Default cat for a required field
+        columns[1]['default'] = 'CAT-XXX'
+        del columns[1]['required']
+        csv_data = """
+title,category,subcategory,currency,price,url,image_url
+{iphone_data}
+{ipad_data}
+        """.format(
+            iphone_data=VALID_TEMPLATE_STR.format(**iphone_data),
+            ipad_data=VALID_TEMPLATE_STR.format(**IPAD_DATA),
+        )
+
+        reader = smartcsv.reader(StringIO(csv_data), columns=columns)
+        iphone = next(reader)
+        ipad = next(reader)
+
+        self.assertRaises(StopIteration, lambda: list(next(reader)))
+
+        self.assertTrue(
+            isinstance(iphone, dict) and isinstance(ipad, dict))
+
+        expected_iphone_data = IPHONE_DATA.copy()
+        expected_iphone_data['category'] = 'CAT-XXX'
+
+        self.assertModelsEquals(iphone, expected_iphone_data)
+        self.assertModelsEquals(ipad, IPAD_DATA)
