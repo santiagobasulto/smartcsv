@@ -92,7 +92,7 @@ class CSVModelReader(object):
     def _is_valid_row_values(self, row):
         for index, value in enumerate(row):
             column = self.columns[index]
-            if column.get('required', False) and not value:
+            if column.get('required', False) and not value and 'default' not in column:
                 return False, {
                     column['name']: 'Field required and not provided.'
                 }
@@ -130,11 +130,6 @@ class CSVModelReader(object):
             (len(csv_row) == 1 and not csv_row[0].strip())
         )
 
-    def _get_column_by_name(self, name):
-        for column in self.columns:
-            if name == column.get('name'):
-                return column
-
     def _add_error(self, error_dict, csv_row,
                    row_counter, error_description=None):
         row_error = {
@@ -171,15 +166,18 @@ class CSVModelReader(object):
         obj = {}
 
         for index, csv_value in enumerate(csv_row):
+            column = self.columns[index]
 
-            if self.columns[index].get('skip', False):
+            if column.get('skip', False):
                 continue
+
+            if not csv_value and 'default' in column:
+                csv_value = self.columns[index]['default']
 
             csv_value = (csv_value.strip() if
                          self.strip_white_spaces else csv_value)
 
-            column_name = self.model_fields[index]
-            column = self._get_column_by_name(column_name)
+            column_name = column['name']
 
             value = csv_value
 
