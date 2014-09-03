@@ -9,7 +9,8 @@ class CSVModelReader(object):
 
     def __init__(self, csv_file, dialect=None, encoding='utf-8',
                  columns=None, fail_fast=True, max_failures=None,
-                 strip_white_spaces=True, header_included=True, skip_lines=0):
+                 strip_white_spaces=True, header_included=True, skip_lines=0,
+                 **fmtparams):
         """
         Bare minimal CSV parser class that provides:
             * Validation. You can specify different requirements
@@ -36,7 +37,7 @@ class CSVModelReader(object):
             {'name': 'column', 'validator': lambda c: c.startswith('http')},
         ]
         """
-        self.reader = csv.reader(csv_file, dialect=dialect)
+        self.reader = csv.reader(csv_file, dialect=dialect, **fmtparams)
         self.encoding = encoding
         self.columns = columns
         self.fail_fast = fail_fast
