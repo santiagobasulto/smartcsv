@@ -1,6 +1,8 @@
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
+import smartcsv
+
 
 class PyTest(TestCommand):
     user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
@@ -22,11 +24,13 @@ class PyTest(TestCommand):
 
 setup(
     name='smartcsv',
-    version='0.2.0',
+    version=smartcsv.__version__,
     description=("CSVs are awesome, yet they're pretty dumb. "
                  "Let's get them smarter!"),
     url='http://github.com/santiagobasulto/smartcsv',
-    download_url="https://github.com/santiagobasulto/smartcsv/tarball/0.2.0",
+    download_url=(
+        "https://github.com/santiagobasulto/smartcsv/tarball/{version}".format(
+            version=smartcsv.__version__)),
     author='Santiago Basulto',
     author_email='santiago.basulto@gmail.com',
     license='MIT',

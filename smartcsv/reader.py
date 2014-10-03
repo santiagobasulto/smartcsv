@@ -9,7 +9,8 @@ class CSVModelReader(object):
 
     def __init__(self, csv_file, dialect=None, encoding='utf-8',
                  columns=None, fail_fast=True, max_failures=None,
-                 strip_white_spaces=True, header_included=True, skip_lines=0):
+                 strip_white_spaces=True, header_included=True, skip_lines=0,
+                 allow_empty_rows=False):
         """
         Bare minimal CSV parser class that provides:
             * Validation. You can specify different requirements
@@ -46,6 +47,7 @@ class CSVModelReader(object):
         self.strip_white_spaces = strip_white_spaces
         self.header_included = header_included
         self.skip_lines = skip_lines
+        self.allow_empty_rows = allow_empty_rows
         self.errors = {}
 
         self._validate_model_definition(self.columns)
@@ -162,11 +164,14 @@ class CSVModelReader(object):
                 return False, row_errors
         return True, {}
 
-    def is_empty_row(self, csv_row):
+    def row_has_values(self, csv_row):
         return (
             not csv_row or len(csv_row) == 0 or
             (len(csv_row) == 1 and not csv_row[0].strip())
         )
+
+    def is_empty_row(self, csv_row):
+        return not any(csv_row)
 
     def _add_error(self, csv_row,
                    row_counter, error_description=None):
@@ -206,11 +211,14 @@ class CSVModelReader(object):
 
         return obj
 
-    def __next__(self):
+    def next_value(self):
         csv_row = next(self.reader)
 
-        if self.is_empty_row(csv_row):
-            return next(self)
+        if self.row_has_values(csv_row):
+            return None
+
+        if self.allow_empty_rows and self.is_empty_row(csv_row):
+            return None
 
         valid, errors = self.validate_row(csv_row)
 
@@ -225,7 +233,7 @@ class CSVModelReader(object):
                     csv_row, row_counter=self.row_counter,
                     error_description=errors)
                 self.row_counter += 1
-                return next(self)
+                return None
 
         try:
             obj = self._build_object(csv_row)
@@ -237,9 +245,15 @@ class CSVModelReader(object):
                 csv_row, self.row_counter,
                 error_description={'transform': repr(original_exception)})
             self.row_counter += 1
-            return next(self)
+            return None
 
         self.row_counter += 1
         return obj
+
+    def __next__(self):
+        val = None
+        while val is None:
+            val = self.next_value()
+        return val
 
     next = __next__
