@@ -16,6 +16,7 @@
 *.egg-info
 dist
 build
+
 eggs
 parts
 bin
@@ -38,3 +39,6 @@ pip-log.txt
 ## paver generated files
 /paver-minilib.zip
 .idea/*
+
+## Docs
+docs/_build
