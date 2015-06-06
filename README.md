@@ -169,3 +169,12 @@ To test:
 $ python setup.py test  # Run tests in your venv
 $ tox  # Make sure it passes in all versions.
 ```
+
+### Integration tests
+
+There are "integration" tests included under `tests/integration`. They are not run by the default test runner. The idea of those tests is to have real examples of use cases for `smartcsv` documented.
+You'll have to run them manually:
+
+```bash
+py.test tests/integration/lpnk/test_lpnk.py
+```
