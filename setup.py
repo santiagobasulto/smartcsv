@@ -39,7 +39,7 @@ setup(
     tests_require=[
         'cov-core==1.14.0',
         'coverage==3.7.1',
-        'py==1.4.23',
+        'py==1.10.0',
         'pytest==2.6.1',
         'pytest-cov==1.8.0',
         'six==1.7.3',
